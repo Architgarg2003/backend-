@@ -58,6 +58,7 @@ googleapis-common-protos==1.66.0
 gql==3.5.0
 graphql-core==3.2.5
 grpcio==1.68.0
+gunicorn==23.0.0
 h11==0.14.0
 h2==4.1.0
 hpack==4.0.0
