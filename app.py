@@ -494,131 +494,158 @@
 
 
 
-import os
-import logging
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-from sambanova_client import SambaNovaClient
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
+# import os
+# import logging
+# from flask import Flask, request, jsonify
+# from flask_pymongo import PyMongo
+# from flask_cors import CORS
+# from sambanova_client import SambaNovaClient
+# from pymongo.mongo_client import MongoClient
+# from pymongo.server_api import ServerApi
 
-# Flask App Configuration
-app = Flask(__name__)
+# # Flask App Configuration
+# app = Flask(__name__)
 
-# Set MongoDB URI
-uri = "mongodb+srv://architgarg2003:Iambornin2003@cluster0.usvrd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-mongo = MongoClient(uri, server_api=ServerApi('1'))
+# # Set MongoDB URI
+# uri = "mongodb+srv://architgarg2003:Iambornin2003@cluster0.usvrd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+# mongo = MongoClient(uri, server_api=ServerApi('1'))
 
-# Send a ping to confirm a successful connection
-try:
-    mongo.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print("Failed to connect to MongoDB:")
-    print(e)
+# # Send a ping to confirm a successful connection
+# try:
+#     mongo.admin.command('ping')
+#     print("Pinged your deployment. You successfully connected to MongoDB!")
+# except Exception as e:
+#     print("Failed to connect to MongoDB:")
+#     print(e)
 
-CORS(app)  # Enable CORS for all routes
+# CORS(app)  # Enable CORS for all routes
 
-# Logging Configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# # Logging Configuration
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+# )
+# logger = logging.getLogger(__name__)
 
-@app.route('/test_mongo', methods=['POST'])
-def test_mongo():
-    try:
-        # Access a collection (use 'test' as default for testing)
-        mongo.db.test.insert_one({"message": "Hello, MongoDB!"})
-        return {"status": "success", "message": "MongoDB connected and test document added!"}, 200
-    except Exception as e:
-        return {"status": "error", "message": str(e)}, 500
+# @app.route('/test_mongo', methods=['POST'])
+# def test_mongo():
+#     try:
+#         # Access a collection (use 'test' as default for testing)
+#         mongo.db.test.insert_one({"message": "Hello, MongoDB!"})
+#         return {"status": "success", "message": "MongoDB connected and test document added!"}, 200
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}, 500
     
 
-# API Routes
-@app.route('/set_api_key', methods=['POST'])
-def set_api_key():
-    """Set SambaNova API key for a user"""
-    user_id = request.json.get('user_id')
-    api_key = request.json.get('api_key')
+# # API Routes
+# @app.route('/set_api_key', methods=['POST'])
+# def set_api_key():
+#     """Set SambaNova API key for a user"""
+#     user_id = request.json.get('user_id')
+#     api_key = request.json.get('api_key')
 
-    if not user_id or not api_key:
-        return jsonify({"error": "User  ID and API key are required"}), 400
+#     if not user_id or not api_key:
+#         return jsonify({"error": "User  ID and API key are required"}), 400
 
-    # Check if the user already exists
-    user_data = mongo.db.users.find_one({"user_id": user_id})
+#     # Check if the user already exists
+#     user_data = mongo.db.users.find_one({"user_id": user_id})
 
-    if user_data:
-        # If the user exists, update the API key
-        mongo.db.users.update_one({"user_id": user_id}, {"$set": {"api_key": api_key}})
-    else:
-        # If the user does not exist, create a new user with the API key
-        mongo.db.users.insert_one({"user_id": user_id, "api_key": api_key, "available_models": []})
+#     if user_data:
+#         # If the user exists, update the API key
+#         mongo.db.users.update_one({"user_id": user_id}, {"$set": {"api_key": api_key}})
+#     else:
+#         # If the user does not exist, create a new user with the API key
+#         mongo.db.users.insert_one({"user_id": user_id, "api_key": api_key, "available_models": []})
 
-    # Fetch and store available models
-    available_models = SambaNovaClient.get_available_models()
-    mongo.db.users.update_one({"user_id": user_id}, {"$set": {"available_models": available_models}})
+#     # Fetch and store available models
+#     available_models = SambaNovaClient.get_available_models()
+#     mongo.db.users.update_one({"user_id": user_id}, {"$set": {"available_models": available_models}})
 
-    return jsonify({
-        "message": "API key set successfully",
-        "available_models": available_models
-    }), 200
+#     return jsonify({
+#         "message": "API key set successfully",
+#         "available_models": available_models
+#     }), 200
 
 
-@app.route('/set_model', methods=['POST'])
-def set_model():
-    """Set the SambaNova model for a user"""
-    user_id = request.json.get('user_id')
-    model = request.json.get('model')
+# @app.route('/set_model', methods=['POST'])
+# def set_model():
+#     """Set the SambaNova model for a user"""
+#     user_id = request.json.get('user_id')
+#     model = request.json.get('model')
 
-    if not user_id or not model:
-        return jsonify({"error": "User  ID and model are required"}), 400
+#     if not user_id or not model:
+#         return jsonify({"error": "User  ID and model are required"}), 400
 
-    user_data = mongo.db.users.find_one({"user_id": user_id})
+#     user_data = mongo.db.users.find_one({"user_id": user_id})
 
-    if not user_data or 'api_key' not in user_data:
-        return jsonify({"error": "API key must be set first"}), 400
+#     if not user_data or 'api_key' not in user_data:
+#         return jsonify({"error": "API key must be set first"}), 400
 
-    # Update the selected model for the user
-    mongo.db.users.update_one({"user_id": user_id}, {"$set": {"selected_model": model}})
+#     # Update the selected model for the user
+#     mongo.db.users.update_one({"user_id": user_id}, {"$set": {"selected_model": model}})
 
-    return jsonify({
-        "message": "Model set successfully",
-        "model": model,
-    }), 200
+#     return jsonify({
+#         "message": "Model set successfully",
+#         "model": model,
+#     }), 200
 
-@app.route('/set_context', methods=['POST'])
-def set_context():
-    """Set context with embedding for a user"""
-    user_id = request.json.get('user_id')
-    context = request.json.get('context')
-    chunk_size = request.json.get('chunk_size', 300)
+# @app.route('/set_context', methods=['POST'])
+# def set_context():
+#     """Set context with embedding for a user"""
+#     user_id = request.json.get('user_id')
+#     context = request.json.get('context')
+#     chunk_size = request.json.get('chunk_size', 300)
 
-    if not user_id or not context:
-        return jsonify({"error": "User  ID and context are required"}), 400
+#     if not user_id or not context:
+#         return jsonify({"error": "User  ID and context are required"}), 400
 
-    user_data = mongo.db.users.find_one({"user_id": user_id})
+#     user_data = mongo.db.users.find_one({"user_id": user_id})
 
-    if not user_data or 'api_key' not in user_data:
-        return jsonify({"error": "API key must be set first"}), 400
+#     if not user_data or 'api_key' not in user_data:
+#         return jsonify({"error": "API key must be set first"}), 400
 
-    try:
-        # Initialize SambaNovaClient with user's API key
-        client = SambaNovaClient(user_data['api_key'])
-        client.set_rag_context(context, chunk_size)
+#     try:
+#         # Initialize SambaNovaClient with user's API key
+#         client = SambaNovaClient(user_data['api_key'])
+#         client.set_rag_context(context, chunk_size)
 
-        # Store the context in the database
-        mongo.db.users.update_one({"user_id": user_id}, {"$set": {"context": context}})
+#         # Store the context in the database
+#         mongo.db.users.update_one({"user_id": user_id}, {"$set": {"context": context}})
 
-        return jsonify({
-            "message": "Context set successfully",
-            "context": context
-        }), 200
-    except Exception as e:
-        logger.error(f"Error setting context: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+#         return jsonify({
+#             "message": "Context set successfully",
+#             "context": context
+#         }), 200
+#     except Exception as e:
+#         logger.error(f"Error setting context: {str(e)}")
+#         return jsonify({"error": str(e)}), 500
+
+# # @app.route('/rag_query', methods=['POST'])
+# # def rag_query():
+# #     """Handle RAG query with embedded context for a user"""
+# #     user_id = request.json.get('user_id')
+# #     query = request.json.get('query')
+
+# #     if not user_id or not query:
+# #         return jsonify({"error": "User  ID and query are required"}), 400
+
+# #     user_data = mongo.db.users.find_one({"user_id": user_id})
+
+# #     if not user_data or 'api_key' not in user_data:
+# #         return jsonify({"error": "API key must be set first"}), 400
+
+# #     try:
+# #         # Initialize SambaNovaClient with user's API key
+# #         client = SambaNovaClient(user_data['api_key'])
+# #         response = client.get_rag_response(query)
+
+# #         return jsonify({
+# #             "response": response
+# #         }), 200
+# #     except Exception as e:
+# #         logger.error(f"Error handling RAG query: {str(e)}")
+# #         return jsonify({"error": str(e)}), 500
+
 
 # @app.route('/rag_query', methods=['POST'])
 # def rag_query():
@@ -634,61 +661,239 @@ def set_context():
 #     if not user_data or 'api_key' not in user_data:
 #         return jsonify({"error": "API key must be set first"}), 400
 
+#     # Retrieve context from user data
+#     context = user_data.get('context')
+#     if not context:
+#         return jsonify({"error": "No context provided. Please set context first."}), 400
+
 #     try:
-#         # Initialize SambaNovaClient with user's API key
+#         # # Initialize SambaNovaClient with user's API key
 #         client = SambaNovaClient(user_data['api_key'])
+#         client.set_rag_context(context)
+
+#         # Get the RAG response
 #         response = client.get_rag_response(query)
 
 #         return jsonify({
 #             "response": response
 #         }), 200
 #     except Exception as e:
-#         logger.error(f"Error handling RAG query: {str(e)}")
+#         logger.error(f"Error processing RAG query: {str(e)}")
 #         return jsonify({"error": str(e)}), 500
 
+# @app.route('/health', methods=['GET'])
+# def health_check():
+#     """Health check endpoint"""
+#     return jsonify({
+#         "status": "healthy",
+#         "version": "1.0.0"
+#     }), 200
 
-@app.route('/rag_query', methods=['POST'])
-def rag_query():
-    """Handle RAG query with embedded context for a user"""
-    user_id = request.json.get('user_id')
-    query = request.json.get('query')
+# if __name__ == '__main__':
+#     # app.run(debug=True, host='0.0.0.0', port=5001)
+#     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
 
-    if not user_id or not query:
-        return jsonify({"error": "User  ID and query are required"}), 400
 
-    user_data = mongo.db.users.find_one({"user_id": user_id})
 
-    if not user_data or 'api_key' not in user_data:
-        return jsonify({"error": "API key must be set first"}), 400
 
-    # Retrieve context from user data
-    context = user_data.get('context')
-    if not context:
-        return jsonify({"error": "No context provided. Please set context first."}), 400
 
+import os
+import logging
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
+from sambanova_client import SambaNovaClient  # Assuming this class exists similarly to the Flask version
+
+# Logging Configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Create FastAPI app
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+# Set MongoDB URI
+uri = "mongodb+srv://architgarg2003:Iambornin2003@cluster0.usvrd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+mongo = MongoClient(uri, server_api=ServerApi('1'))
+
+# Send a ping to confirm a successful connection
+try:
+    mongo.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print("Failed to connect to MongoDB:")
+    print(e)
+
+# Pydantic Models for Request Validation
+class APIKeyRequest(BaseModel):
+    user_id: str
+    api_key: str
+
+class ModelRequest(BaseModel):
+    user_id: str
+    model: str
+
+class ContextRequest(BaseModel):
+    user_id: str
+    context: str
+    chunk_size: int = 300
+
+class RAGQueryRequest(BaseModel):
+    user_id: str
+    query: str
+
+@app.post("/test_mongo")
+async def test_mongo():
     try:
-        # # Initialize SambaNovaClient with user's API key
+        # Access a collection (use 'test' as default for testing)
+        mongo.db.test.insert_one({"message": "Hello, MongoDB!"})
+        return {
+            "status": "success", 
+            "message": "MongoDB connected and test document added!"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/set_api_key")
+async def set_api_key(request: APIKeyRequest):
+    """Set SambaNova API key for a user"""
+    try:
+        # Check if the user already exists
+        user_data = mongo.db.users.find_one({"user_id": request.user_id})
+
+        if user_data:
+            # If the user exists, update the API key
+            mongo.db.users.update_one(
+                {"user_id": request.user_id}, 
+                {"$set": {"api_key": request.api_key}}
+            )
+        else:
+            # If the user does not exist, create a new user with the API key
+            mongo.db.users.insert_one({
+                "user_id": request.user_id, 
+                "api_key": request.api_key, 
+                "available_models": []
+            })
+
+        # Fetch and store available models
+        available_models = SambaNovaClient.get_available_models()
+        mongo.db.users.update_one(
+            {"user_id": request.user_id}, 
+            {"$set": {"available_models": available_models}}
+        )
+
+        return {
+            "message": "API key set successfully",
+            "available_models": available_models
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/set_model")
+async def set_model(request: ModelRequest):
+    """Set the SambaNova model for a user"""
+    try:
+        user_data = mongo.db.users.find_one({"user_id": request.user_id})
+
+        if not user_data or 'api_key' not in user_data:
+            raise HTTPException(status_code=400, detail="API key must be set first")
+
+        # Update the selected model for the user
+        mongo.db.users.update_one(
+            {"user_id": request.user_id}, 
+            {"$set": {"selected_model": request.model}}
+        )
+
+        return {
+            "message": "Model set successfully",
+            "model": request.model,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/set_context")
+async def set_context(request: ContextRequest):
+    """Set context with embedding for a user"""
+    try:
+        user_data = mongo.db.users.find_one({"user_id": request.user_id})
+
+        if not user_data or 'api_key' not in user_data:
+            raise HTTPException(status_code=400, detail="API key must be set first")
+
+        # Initialize SambaNovaClient with user's API key
+        client = SambaNovaClient(user_data['api_key'])
+        client.set_rag_context(request.context, request.chunk_size)
+
+        # Store the context in the database
+        mongo.db.users.update_one(
+            {"user_id": request.user_id}, 
+            {"$set": {"context": request.context}}
+        )
+
+        return {
+            "message": "Context set successfully",
+            "context": request.context
+        }
+    except Exception as e:
+        logger.error(f"Error setting context: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/rag_query")
+async def rag_query(request: RAGQueryRequest):
+    """Handle RAG query with embedded context for a user"""
+    try:
+        user_data = mongo.db.users.find_one({"user_id": request.user_id})
+
+        if not user_data or 'api_key' not in user_data:
+            raise HTTPException(status_code=400, detail="API key must be set first")
+
+        # Retrieve context from user data
+        context = user_data.get('context')
+        if not context:
+            raise HTTPException(status_code=400, detail="No context provided. Please set context first.")
+
+        # Initialize SambaNovaClient with user's API key
         client = SambaNovaClient(user_data['api_key'])
         client.set_rag_context(context)
 
         # Get the RAG response
-        response = client.get_rag_response(query)
+        response = client.get_rag_response(request.query)
 
-        return jsonify({
+        return {
             "response": response
-        }), 200
+        }
     except Exception as e:
         logger.error(f"Error processing RAG query: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.route('/health', methods=['GET'])
-def health_check():
+@app.get("/health")
+async def health_check():
     """Health check endpoint"""
-    return jsonify({
+    return {
         "status": "healthy",
         "version": "1.0.0"
-    }), 200
+    }
 
+# Main block to run the application
 if __name__ == '__main__':
-    # app.run(debug=True, host='0.0.0.0', port=5001)
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    import uvicorn
+    uvicorn.run(
+        "app:app", 
+        host='127.0.0.1', 
+        port=int(os.getenv('PORT', 5001)),
+        reload=True
+    )
