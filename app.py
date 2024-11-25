@@ -9,9 +9,10 @@ from pymongo.server_api import ServerApi
 
 # Flask App Configuration
 app = Flask(__name__)
+CORS(app)
 
 # Set MongoDB URI
-uri = os.getenv('URI')
+uri = "mongodb+srv://architgarg2003:Iambornin2003@cluster0.usvrd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 mongo = MongoClient(uri, server_api=ServerApi('1'))
 
 # Send a ping to confirm a successful connection
@@ -22,7 +23,7 @@ except Exception as e:
     print("Failed to connect to MongoDB:")
     print(e)
 
-CORS(app)  # Enable CORS for all routes
+  # Enable CORS for all routes
 
 # Logging Configuration
 logging.basicConfig(
@@ -241,5 +242,9 @@ def health_check():
     }), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
-    # app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    # app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+
+
+
+
